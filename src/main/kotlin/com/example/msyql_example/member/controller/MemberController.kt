@@ -1,13 +1,17 @@
 package com.example.msyql_example.member.controller
 
 import com.example.msyql_example.common.dto.BaseResponse
+import com.example.msyql_example.common.dto.CustomUser
 import com.example.msyql_example.common.dto.TokenInfo
 import com.example.msyql_example.member.dto.LoginDto
 import com.example.msyql_example.member.dto.MemberRequestDto
+import com.example.msyql_example.member.dto.MemberResponseDto
 import com.example.msyql_example.member.service.MemberService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -38,5 +42,12 @@ class MemberController(
         val tokenInfo = memberService.login(loginDto)
         return ResponseEntity.status(HttpStatus.OK)
             .body(BaseResponse(data = tokenInfo))
+    }
+
+    @GetMapping("/info")
+    private fun searchMyInfo() : ResponseEntity<BaseResponse<MemberResponseDto>> {
+        val id = (SecurityContextHolder.getContext().authentication.principal as CustomUser).id
+        val result = memberService.searchMyInfo(id)
+        return ResponseEntity.status(HttpStatus.OK).body(BaseResponse(data = result))
     }
 }

@@ -65,3 +65,10 @@ data class MemberRequestDto(
         gender = gender
     )
 }
+
+data class MemberResponseDto(
+    val email : String,
+    val name : String,
+    val birthday : LocalDate,
+    val gender : Gender,
+)

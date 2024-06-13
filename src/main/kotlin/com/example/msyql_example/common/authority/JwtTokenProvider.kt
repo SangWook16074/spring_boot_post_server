@@ -1,5 +1,6 @@
 package com.example.msyql_example.common.authority
 
+import com.example.msyql_example.common.dto.CustomUser
 import com.example.msyql_example.common.dto.TokenInfo
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
@@ -10,7 +11,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
-import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Component
 import java.util.*
@@ -40,6 +40,7 @@ class JwtTokenProvider {
             .builder()
             .subject(authentication.name)
             .claim("auth", authorities)
+            .claim("userId", (authentication.principal as CustomUser).id)
             .issuedAt(now)
             .expiration(accessExpiration)
             .signWith(key, Jwts.SIG.HS256)
@@ -56,11 +57,13 @@ class JwtTokenProvider {
 
         val auth = claims["auth"] ?: throw RuntimeException("유효하지 않은 토큰입니다!")
 
+        val userId = claims["userId"] ?: throw RuntimeException("유효하지 않은 토큰입니다!")
+
         val authorities : Collection<GrantedAuthority> = (auth as String)
             .split(",")
             .map { SimpleGrantedAuthority(it) }
 
-        val principal : UserDetails = User(claims.subject, "", authorities)
+        val principal : UserDetails = CustomUser(userId.toString().toLong() ,claims.subject, "", authorities)
 
         return UsernamePasswordAuthenticationToken(principal, "", authorities)
     }
